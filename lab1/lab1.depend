@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1678360494 source:e:\uni\year 3 2nd semester\graphics\lab1\lab1\main.cpp
+	<tchar.h>
+	<windows.h>
+	<iostream>
+
+1678952030 source:e:\uni\year 3 2nd semester\graphics\labs\lab1\main.cpp
+	<tchar.h>
+	<windows.h>
+	<iostream>
+

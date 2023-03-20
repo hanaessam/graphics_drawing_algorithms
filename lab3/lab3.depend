@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1679276352 source:e:\uni\year 3 2nd semester\graphics\labs\lab3\main.cpp
+	<tchar.h>
+	<windows.h>
+	<iostream>
+
