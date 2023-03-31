@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1679479950 source:e:\uni\year 3 2nd semester\graphics\labs\lab4 (direct circle drawing algorithm)\main.cpp
+	<tchar.h>
+	<windows.h>
+	<iostream>
+	<math.h>
+

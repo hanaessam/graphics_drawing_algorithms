@@ -56,7 +56,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
                CW_USEDEFAULT,       /* Windows decides the position */
                CW_USEDEFAULT,       /* where the window ends up on the screen */
                1000,                 /* The programs width */
-               1000,                 /* and height in pixels */
+               750,                 /* and height in pixels */
                HWND_DESKTOP,        /* The window is a child-window to desktop */
                NULL,                /* No menu */
                hThisInstance,       /* Program Instance handler */
@@ -80,7 +80,9 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
 }
 
 
-void Draw8Points(HDC hdc,int xc,int yc, int a, int b,COLORREF color)
+
+// utility function
+void draw8points(HDC hdc,int xc,int yc, int a, int b,COLORREF color)
 {
     SetPixel(hdc, xc+a, yc+b, color);
     SetPixel(hdc, xc-a, yc+b, color);
@@ -92,19 +94,25 @@ void Draw8Points(HDC hdc,int xc,int yc, int a, int b,COLORREF color)
     SetPixel(hdc, xc+b, yc-a, color);
 }
 
-void CircleDirect(HDC hdc,int xc,int yc, int R,COLORREF color)
+void drawCircle(HDC hdc,int xc,int yc, int r,COLORREF color)
 {
-    int x=0,y=R;
-    int R2=R*R;
-    Draw8Points(hdc,xc,yc,x,y,color);
+    int x=0;
+    int y=r;
+    int d=1-r;
+    draw8points(hdc,xc,yc,x,y,color);
     while(x<y)
     {
-        x++;
-        y=round(sqrt((double)(R2-x*x)));
-        Draw8Points(hdc,xc,yc,x,y,color);
+        if(d<0){
+            x++;
+            d+=2*x+3;
+        }else{
+            x++;
+            y--;
+            d+=2*(x-y)+5;
+        }
+        draw8points(hdc,xc,yc,x,y,color);
     }
 }
-
 
 
 /*  This function is called by the Windows function DispatchMessage()  */
@@ -115,7 +123,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     static int x1, y1, x2, y2;
     static bool isDrawing = false;
     HDC hdc = GetDC(hwnd);
-    COLORREF color = RGB(0,15,20);
+    COLORREF color = RGB(0,0,0);
     switch (message)                  /* handle the messages */
     {
     case WM_LBUTTONDOWN:
@@ -132,7 +140,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             x2 = LOWORD(lParam);
             y2 = HIWORD(lParam);
             int radius = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-            CircleDirect(hdc, x1, y1, radius, color);
+            drawCircle(hdc, x1,y1,radius,color);
             isDrawing = false;
         }
         break;
