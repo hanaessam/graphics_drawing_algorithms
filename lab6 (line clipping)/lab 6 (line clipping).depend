@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1682538491 source:e:\uni\year 3 2nd semester\graphics\labs\lab 6 (line clipping)\main.cpp
+	<tchar.h>
+	<windows.h>
+	<cmath>
+
