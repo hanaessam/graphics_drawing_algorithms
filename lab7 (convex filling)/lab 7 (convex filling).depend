@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1683106263 source:e:\uni\year 3 2nd semester\graphics\labs\lab 7 (convex filling)\main.cpp
+	<tchar.h>
+	<windows.h>
+	<algorithm>
+	<cmath>
+	<iostream>
+	<list>
+	<bits/stdc++.h>
+
