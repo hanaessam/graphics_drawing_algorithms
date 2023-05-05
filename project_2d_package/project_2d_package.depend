@@ -1,0 +1,27 @@
+# depslib dependency file v1.0
+1683302883 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\main.cpp
+	<tchar.h>
+	<windows.h>
+	<commctrl.h>
+	<algorithm>
+	<cmath>
+	"linealgorithm.h"
+
+1683301682 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\linealgorithm.h
+	<Windows.h>
+
+1683306509 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\linealgorithm.cpp
+	"linealgorithm.h"
+	<cmath>
+	<algorithm>
+	<windows.h>
+
+1683307274 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\circlealgorithm.cpp
+	"circlealgorithm.h"
+	<cmath>
+	<algorithm>
+	<windows.h>
+
+1683307271 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\circlealgorithm.h
+	<Windows.h>
+
