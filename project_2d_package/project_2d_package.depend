@@ -25,3 +25,30 @@
 1683307271 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\circlealgorithm.h
 	<Windows.h>
 
+1683465390 source:c:\users\dell\desktop\graphics\graphics_drawing_algorithms\project_2d_package\circlealgorithm.cpp
+	"circlealgorithm.h"
+	<cmath>
+	<algorithm>
+	<windows.h>
+
+1683465390 c:\users\dell\desktop\graphics\graphics_drawing_algorithms\project_2d_package\circlealgorithm.h
+	<Windows.h>
+
+1683465390 source:c:\users\dell\desktop\graphics\graphics_drawing_algorithms\project_2d_package\linealgorithm.cpp
+	"linealgorithm.h"
+	<cmath>
+	<algorithm>
+	<windows.h>
+
+1683465390 c:\users\dell\desktop\graphics\graphics_drawing_algorithms\project_2d_package\linealgorithm.h
+	<Windows.h>
+
+1683465390 source:c:\users\dell\desktop\graphics\graphics_drawing_algorithms\project_2d_package\main.cpp
+	<tchar.h>
+	<windows.h>
+	<commctrl.h>
+	<algorithm>
+	<cmath>
+	"linealgorithm.h"
+	"circlealgorithm.h"
+

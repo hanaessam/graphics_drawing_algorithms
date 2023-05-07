@@ -11,6 +11,7 @@
 #include <cmath>
 #include "linealgorithm.h"
 #include "circlealgorithm.h"
+#include "EllipseAlgorithm.h"
 
 
 #define FILE_MENU_NEW 1

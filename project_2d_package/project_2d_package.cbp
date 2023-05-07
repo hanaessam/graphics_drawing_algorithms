@@ -14,6 +14,7 @@
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="./" />
+					<Add directory="include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -24,6 +25,7 @@
 				<Compiler>
 					<Add option="-O2" />
 					<Add directory="./" />
+					<Add directory="include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -41,9 +43,11 @@
 		</Linker>
 		<Unit filename="circlealgorithm.cpp" />
 		<Unit filename="circlealgorithm.h" />
+		<Unit filename="include/EllipseAlgorithm.h" />
 		<Unit filename="linealgorithm.cpp" />
 		<Unit filename="linealgorithm.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/EllipseAlgorithm.cpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
