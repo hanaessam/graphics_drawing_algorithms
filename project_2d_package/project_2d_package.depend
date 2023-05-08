@@ -1,11 +1,15 @@
 # depslib dependency file v1.0
-1683302883 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\main.cpp
+1683548438 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\main.cpp
 	<tchar.h>
 	<windows.h>
 	<commctrl.h>
 	<algorithm>
 	<cmath>
 	"linealgorithm.h"
+	"circlealgorithm.h"
+	"ellipseAlgorithm.h"
+	"clippingalgorithm.h"
+	"ids.h"
 
 1683301682 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\linealgorithm.h
 	<Windows.h>
@@ -51,4 +55,26 @@
 	<cmath>
 	"linealgorithm.h"
 	"circlealgorithm.h"
+
+1683543861 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\ellipsealgorithm.h
+	<windows.h>
+
+1683543941 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\ellipsealgorithm.cpp
+	"ellipsealgorithm.h"
+	<tchar.h>
+	<windows.h>
+	<iostream>
+	<cmath>
+
+1683544925 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\ids.h
+
+1683548850 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.cpp
+	"clippingalgorithm.h"
+	<tchar.h>
+	<windows.h>
+	<iostream>
+	<cmath>
+
+1683548668 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.h
+	<windows.h>
 

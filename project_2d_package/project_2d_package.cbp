@@ -43,11 +43,14 @@
 		</Linker>
 		<Unit filename="circlealgorithm.cpp" />
 		<Unit filename="circlealgorithm.h" />
-		<Unit filename="include/EllipseAlgorithm.h" />
+		<Unit filename="clippingalgorithm.cpp" />
+		<Unit filename="clippingalgorithm.h" />
+		<Unit filename="ellipsealgorithm.cpp" />
+		<Unit filename="ellipsealgorithm.h" />
+		<Unit filename="ids.h" />
 		<Unit filename="linealgorithm.cpp" />
 		<Unit filename="linealgorithm.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="src/EllipseAlgorithm.cpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

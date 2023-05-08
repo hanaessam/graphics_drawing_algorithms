@@ -1,4 +1,4 @@
-#include "EllipseAlgorithm.h"
+#include "ellipsealgorithm.h"
 #include <tchar.h>
 #include <windows.h>
 #include <iostream>

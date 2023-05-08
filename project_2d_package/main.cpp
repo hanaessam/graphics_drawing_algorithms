@@ -1,3 +1,4 @@
+
 #if defined(UNICODE) && !defined(_UNICODE)
 #define _UNICODE
 #elif defined(_UNICODE) && !defined(UNICODE)
@@ -11,20 +12,12 @@
 #include <cmath>
 #include "linealgorithm.h"
 #include "circlealgorithm.h"
-#include "EllipseAlgorithm.h"
+#include "ellipseAlgorithm.h"
+#include "clippingalgorithm.h"
+#include "ids.h"
 
 
-#define FILE_MENU_NEW 1
-#define FILE_MENU_EXIT 2
-#define CLEAR_SCREEN 3
 
-#define RED_CLR 2001
-#define GREEN_CLR 2002
-#define BLUE_CLR 2003
-#define PURPLE_CLR 2004
-#define YELLOW_CLR 2005
-#define PINK_CLR 2006
-#define BLACK_CLR 2007
 
 
 
@@ -104,36 +97,40 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
 
 
 
+
+
 /*  This function is called by the Windows function DispatchMessage()  */
 
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static int x1, x2, y1, y2;
+    static int x1, x2, y1, y2, a, b ;
     static int radius;
 
     static COLORREF color = RGB(255, 255, 255);
     HDC hdc = GetDC(hwnd);
-    static bool drawing = false;
-    HBRUSH hBrush = CreateSolidBrush(RGB(192, 192, 192));
-    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)hBrush);
+
+    HBRUSH hBrush;
+    HBRUSH hOldBrush;
+
 
     LineAlgorithm line;
     CircleAlgorithm circle;
+    EllipseAlgorithm ellipse;
+    ClippingAlgorithm clipping;
 
     switch (message)
     {
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
-        case CLEAR_SCREEN: // Clear screen menu item
-            // Code to clear the screen
+        case CLEAR_SCREEN:
             RECT rect;
             GetClientRect(hwnd, &rect);
-            FillRect(hdc, &rect, hBrush);
+            hOldBrush = (HBRUSH)GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
+            FillRect(hdc, &rect, hOldBrush);
             ReleaseDC(hwnd, hdc);
-            DeleteObject(hBrush);
-
             break;
+
         case FILE_MENU_EXIT:
             DestroyWindow(hwnd);
             break;
@@ -160,37 +157,68 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             color = RGB(255,192,203);
             break;
 
+        case WHITE_BG:
+            hBrush = CreateSolidBrush(RGB(255, 255, 255));
+            SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)hBrush);
+            DeleteObject(hBrush);
+            InvalidateRect(hwnd, NULL, TRUE);
+            break;
 
-        case 1001:
+
+        case LINE_DDA:
             // Draw DDA line
             line.drawLineDDA(hdc, x1, y1, x2, y2, color);
             break;
 
-        case 1002:
+        case LINE_MIDPOINT:
             // Draw midpoint line
             line.drawLineMidPoint(hdc, x1, y1, x2, y2, color);
             break;
 
-        case 1003:
+        case LINE_PARAMETRIC:
             // Draw parametric line
             line.drawLineParametric(hdc, x1, y1, x2, y2, color);
             break;
 
-        case 1004:
+        case CIRCLE_DIRECT:
+            // Draw Circle Direct
             circle.drawCircleDirect(hdc, x1,y1,radius, color);
             break;
-        case 1005:
+        case CIRCLE_POLAR:
+            //Draw Circle polar
             circle.drawCirclePolar(hdc, x1,y1,radius, color);
             break;
-        case 1006:
+        case CIRCLE_ITERATIVE_POLAR:
+            //Draw circle iterative polar
             circle.drawCircleIterativePolar(hdc, x1,y1,radius, color);
             break;
-        case 1007:
+        case CIRCLE_MIDPOINT:
+            // Draw circle midpoint
             circle.drawCircleBresenham(hdc, x1,y1,radius, color);
             break;
-        case 1008:
+        case CIRCLE_MODIFIED_MIDPOINT:
+            // Draw circle modified midpoint
             circle.drawCircleFasterBresenham(hdc, x1,y1,radius, color);
             break;
+
+        case ELLIPSE_DIRECT:
+            // Draw ellipse direct
+            ellipse.drawEllipseDirect(hdc, x1,y1,a,b, color);
+            break;
+        case ELLIPSE_POLAR:
+            // Draw ellipse polar
+            ellipse.drawEllipsePolar(hdc, x1,y1,a,b, color);
+            break;
+        case ELLIPSE_MIDPOINT:
+            // Draw ellipse midpoint
+            ellipse.drawEllipseBresenham(hdc, x1,y1,a,b, color);
+            break;
+
+        case CLIPPING_USING_RECTANGLE:
+            Rectangle(hdc,100,300,500,100);
+            clipping.CohenRect(hdc,x1,y1,x2,y2,100,300,500,100);
+            break;
+
 
 
         }
@@ -199,16 +227,16 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     case WM_LBUTTONDOWN:
         x1 = LOWORD(lParam);
         y1 = HIWORD(lParam);
-
-
         break;
 
     case WM_RBUTTONDOWN:
         x2 = LOWORD(lParam);
         y2 = HIWORD(lParam);
+        a = abs(x2 - x1);
+        b = abs(y2 - y1);
         radius = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-
         break;
+
 
 
 
@@ -232,6 +260,7 @@ void addMenu(HWND hwnd)
     HMENU hFileMenu = CreateMenu();
     HMENU hMenuItem = CreateMenu();
     HMENU hColorMenu = CreateMenu();
+    HMENU hBGColorMenu = CreateMenu();
 
     AppendMenu(hMenu, MF_POPUP, (UINT_PTR) hFileMenu, "Load File");
     AppendMenu(hFileMenu, MF_STRING,FILE_MENU_NEW, "File" );
@@ -240,46 +269,52 @@ void addMenu(HWND hwnd)
     AppendMenu(hMenu, MF_STRING, 1, "Save");
     AppendMenu(hMenu, MF_STRING, 1, "Brush");
     AppendMenu(hMenu, MF_POPUP, (UINT_PTR) hColorMenu, "Color");
-    AppendMenu(hColorMenu, MF_STRING, 2001, "Red");
-    AppendMenu(hColorMenu, MF_STRING, 2002, "Green");
-    AppendMenu(hColorMenu, MF_STRING, 2003, "Blue");
-    AppendMenu(hColorMenu, MF_STRING, 2004, "Purple");
-    AppendMenu(hColorMenu, MF_STRING, 2005, "Yellow");
-    AppendMenu(hColorMenu, MF_STRING, 2006, "Pink");
-    AppendMenu(hColorMenu, MF_STRING, 2007, "Black");
+    AppendMenu(hColorMenu, MF_STRING, RED_CLR, "Red");
+    AppendMenu(hColorMenu, MF_STRING, GREEN_CLR, "Green");
+    AppendMenu(hColorMenu, MF_STRING, BLUE_CLR, "Blue");
+    AppendMenu(hColorMenu, MF_STRING, PURPLE_CLR, "Purple");
+    AppendMenu(hColorMenu, MF_STRING, YELLOW_CLR, "Yellow");
+    AppendMenu(hColorMenu, MF_STRING, PINK_CLR, "Pink");
+    AppendMenu(hColorMenu, MF_STRING, BLACK_CLR, "Black");
 
     AppendMenu(hMenu, MF_STRING, 1, "Mouse");
-    AppendMenu(hMenu, MF_STRING, 1, "Background Color");
+    AppendMenu(hMenu, MF_POPUP, (UINT_PTR) hBGColorMenu, "Background Color");
+    AppendMenu(hBGColorMenu, MF_STRING, WHITE_BG, "White");
 
 
 
 
     AppendMenu(hMenu,MF_POPUP, (UINT_PTR) hMenuItem, "Choose Algorithm");
-    AppendMenu(hMenuItem, MF_STRING, 1001, "Line DDA");
-    AppendMenu(hMenuItem, MF_STRING, 1002, "Line Midpoint");
-    AppendMenu(hMenuItem, MF_STRING, 1003, "Line Parametric");
+    AppendMenu(hMenuItem, MF_STRING, LINE_DDA, "Line DDA");
+    AppendMenu(hMenuItem, MF_STRING, LINE_MIDPOINT, "Line Midpoint");
+    AppendMenu(hMenuItem, MF_STRING, LINE_PARAMETRIC, "Line Parametric");
 
-    AppendMenu(hMenuItem, MF_STRING, 1004, "Circle Direct");
-    AppendMenu(hMenuItem, MF_STRING, 1005, "Circle Polar");
-    AppendMenu(hMenuItem, MF_STRING, 1006, "Circle Iterative Polar");
-    AppendMenu(hMenuItem, MF_STRING, 1007, "Circle Midpoint");
-    AppendMenu(hMenuItem, MF_STRING, 1008, "Circle Modified Midpoint");
+    AppendMenu(hMenuItem, MF_STRING, CIRCLE_DIRECT, "Circle Direct");
+    AppendMenu(hMenuItem, MF_STRING, CIRCLE_POLAR, "Circle Polar");
+    AppendMenu(hMenuItem, MF_STRING, CIRCLE_ITERATIVE_POLAR, "Circle Iterative Polar");
+    AppendMenu(hMenuItem, MF_STRING, CIRCLE_MIDPOINT, "Circle Midpoint");
+    AppendMenu(hMenuItem, MF_STRING, CIRCLE_MODIFIED_MIDPOINT, "Circle Modified Midpoint");
 
-    AppendMenu(hMenuItem, MF_STRING, 1009, "Fill Circle with Lines (take filling quarter from user)");
-    AppendMenu(hMenuItem, MF_STRING, 1010, "Fill Circle with Other Circles");
-    AppendMenu(hMenuItem, MF_STRING, 1011, "Fill Square with Hermite Curve (vertical)");
-    AppendMenu(hMenuItem, MF_STRING, 1012, "Fill Rectangle with Bezier Curve (horizontal)");
-    AppendMenu(hMenuItem, MF_STRING, 1013, "Convex Fill");
-    AppendMenu(hMenuItem, MF_STRING, 1014, "Non Convex Fill");
-    AppendMenu(hMenuItem, MF_STRING, 1015, "Recursive Flood Fill");
-    AppendMenu(hMenuItem, MF_STRING, 1016, "Non Recursive Flood Fill");
-    AppendMenu(hMenuItem, MF_STRING, 1017, "Cardinal Spline Curve");
-    AppendMenu(hMenuItem, MF_STRING, 1018, "Ellipse Direct");
-    AppendMenu(hMenuItem, MF_STRING, 1019, "Ellipse Polar");
-    AppendMenu(hMenuItem, MF_STRING, 1020, "Ellipse Midpoint");
-    AppendMenu(hMenuItem, MF_STRING, 1021, "Clipping using Rectangle (point, line, polygon)");
-    AppendMenu(hMenuItem, MF_STRING, 1022, "Clipping using Square (point, line)");
-    AppendMenu(hMenuItem, MF_STRING, 1023, "Clipping using Circle (point, line)");
+    AppendMenu(hMenuItem, MF_STRING, FILL_CIRCLE_WITH_LINES, "Fill Circle with Lines (take filling quarter from user)");
+    AppendMenu(hMenuItem, MF_STRING, FILL_CIRCLE_WITH_CIRCLES, "Fill Circle with Other Circles");
+    AppendMenu(hMenuItem, MF_STRING, FILL_SQUARE_WITH_HERMITE_CURVE, "Fill Square with Hermite Curve (vertical)");
+    AppendMenu(hMenuItem, MF_STRING, FILL_RECTANGLE_WITH_BEZIER_CURVE, "Fill Rectangle with Bezier Curve (horizontal)");
+
+
+    AppendMenu(hMenuItem, MF_STRING, CONVEX_FILL, "Convex Fill");
+    AppendMenu(hMenuItem, MF_STRING, NON_CONVEX_FILL, "Non Convex Fill");
+    AppendMenu(hMenuItem, MF_STRING, RECURSIVE_FLOOD_FILL, "Recursive Flood Fill");
+    AppendMenu(hMenuItem, MF_STRING, NON_RECURSIVE_FLOOD_FILL, "Non Recursive Flood Fill");
+    AppendMenu(hMenuItem, MF_STRING, CARDINAL_SPLINE_CURVE, "Cardinal Spline Curve");
+
+    AppendMenu(hMenuItem, MF_STRING, ELLIPSE_DIRECT, "Ellipse Direct");
+    AppendMenu(hMenuItem, MF_STRING, ELLIPSE_POLAR, "Ellipse Polar");
+    AppendMenu(hMenuItem, MF_STRING, ELLIPSE_MIDPOINT, "Ellipse Midpoint");
+
+
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE, "Clipping using Rectangle (point, line, polygon)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_SQUARE, "Clipping using Square (point, line)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_CIRCLE, "Clipping using Circle (point, line)");
 
     AppendMenu(hMenu, MF_STRING, CLEAR_SCREEN, "Clear Screen");
     AppendMenu(hMenu, MF_STRING, FILE_MENU_EXIT, "Exit");
