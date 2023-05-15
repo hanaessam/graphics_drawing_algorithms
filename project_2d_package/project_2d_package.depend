@@ -1,14 +1,15 @@
 # depslib dependency file v1.0
-1683548438 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\main.cpp
+1684189302 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\main.cpp
 	<tchar.h>
 	<windows.h>
 	<commctrl.h>
 	<algorithm>
 	<cmath>
-	"linealgorithm.h"
-	"circlealgorithm.h"
-	"ellipseAlgorithm.h"
-	"clippingalgorithm.h"
+	<vector>
+	<iostream>
+	<fstream>
+	<sstream>
+	<string>
 	"ids.h"
 
 1683301682 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\linealgorithm.h
@@ -20,13 +21,13 @@
 	<algorithm>
 	<windows.h>
 
-1683307274 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\circlealgorithm.cpp
+1684173287 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\circlealgorithm.cpp
 	"circlealgorithm.h"
 	<cmath>
 	<algorithm>
 	<windows.h>
 
-1683307271 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\circlealgorithm.h
+1684173284 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\circlealgorithm.h
 	<Windows.h>
 
 1683465390 source:c:\users\dell\desktop\graphics\graphics_drawing_algorithms\project_2d_package\circlealgorithm.cpp
@@ -66,15 +67,42 @@
 	<iostream>
 	<cmath>
 
-1683544925 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\ids.h
+1684188237 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\ids.h
+	"linealgorithm.h"
+	"circlealgorithm.h"
+	"ellipseAlgorithm.h"
+	"clippingalgorithm.h"
+	"curvealgorithm.h"
+	"fillingalgorithm.h"
 
-1683548850 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.cpp
+1684189372 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.cpp
 	"clippingalgorithm.h"
 	<tchar.h>
 	<windows.h>
 	<iostream>
 	<cmath>
 
-1683548668 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.h
+1684189215 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.h
+	<vector>
 	<windows.h>
+
+1683716107 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\curvealgorithm.h
+	<windows.h>
+
+1683716064 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\curvealgorithm.cpp
+	"curvealgorithm.h"
+	<cmath>
+
+1684182949 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\fillingalgorithm.h
+	<list>
+	<windows.h>
+
+1684183102 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\fillingalgorithm.cpp
+	"fillingalgorithm.h"
+	"curvealgorithm.h"
+	"linealgorithm.h"
+	<algorithm>
+	<cmath>
+	<stack>
+	<bits/stdc++.h>
 

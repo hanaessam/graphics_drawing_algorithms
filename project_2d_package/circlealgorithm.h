@@ -12,6 +12,7 @@ class CircleAlgorithm
         void drawCircleIterativePolar(HDC hdc,int xc,int yc, int R,COLORREF color);
         void drawCircleBresenham(HDC hdc,int xc,int yc, int R,COLORREF color);
         void drawCircleFasterBresenham(HDC hdc,int xc,int yc, int R,COLORREF color);
+        void drawQuarterCircle(HDC hdc, int centerX, int centerY, int radius, COLORREF color);
         virtual ~CircleAlgorithm();
 
 

@@ -100,6 +100,32 @@ void CircleAlgorithm::drawCircleFasterBresenham(HDC hdc,int xc,int yc, int R,COL
         draw8Points(hdc,xc,yc,x,y,color);
     }
 }
+
+void CircleAlgorithm::drawQuarterCircle(HDC hdc, int centerX, int centerY, int radius, COLORREF color)
+{
+    int x = 0;
+    int y = radius;
+    int decision = 3 - 2 * radius;
+
+    while (x <= y)
+    {
+        // Plot the points in the first quadrant
+        SetPixel(hdc, centerX + x, centerY - y, color);
+        SetPixel(hdc, centerX + y, centerY - x, color);
+
+        if (decision <= 0)
+        {
+            decision += 4 * x + 6;
+        }
+        else
+        {
+            decision += 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+    }
+}
+
 CircleAlgorithm::~CircleAlgorithm()
 {
     //dtor

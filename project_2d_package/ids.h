@@ -1,10 +1,18 @@
 #ifndef IDS_H_INCLUDED
 #define IDS_H_INCLUDED
 
+#include "linealgorithm.h"
+#include "circlealgorithm.h"
+#include "ellipseAlgorithm.h"
+#include "clippingalgorithm.h"
+#include "curvealgorithm.h"
+#include "fillingalgorithm.h"
 
-#define FILE_MENU_NEW 1
+#define LOAD_FILE 1
 #define FILE_MENU_EXIT 2
 #define CLEAR_SCREEN 3
+#define SAVE_SCREEN 4
+#define MOUSE_CURSOR 5
 
 
 
@@ -29,8 +37,9 @@
 #define ELLIPSE_POLAR 1019
 #define ELLIPSE_MIDPOINT 1020
 #define CLIPPING_USING_RECTANGLE 1021
-#define CLIPPING_USING_SQUARE 1022
-#define CLIPPING_USING_CIRCLE 1023
+#define CLIPPING_USING_RECTANGLE_POLYGON 1022
+#define CLIPPING_USING_SQUARE 1023
+#define CLIPPING_USING_CIRCLE 1024
 
 
 

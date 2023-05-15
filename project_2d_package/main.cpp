@@ -10,14 +10,15 @@
 #include <commctrl.h>
 #include <algorithm>
 #include <cmath>
-#include "linealgorithm.h"
-#include "circlealgorithm.h"
-#include "ellipseAlgorithm.h"
-#include "clippingalgorithm.h"
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 #include "ids.h"
 
 
-
+#define PI 3.14
 
 
 
@@ -27,7 +28,7 @@ LRESULT CALLBACK WindowProcedure (HWND, UINT, WPARAM, LPARAM);
 
 /*  Make the class name into a global variable  */
 TCHAR szClassName[ ] = _T("CodeBlocksWindowsApp");
-
+vector<std::vector<COLORREF>> screenData;
 
 void addMenu(HWND);
 
@@ -58,6 +59,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
     wincl.cbWndExtra = 0;                      /* structure or the window instance */
     /* Use Windows's default colour as the background of the window */
     wincl.hbrBackground = (HBRUSH) COLOR_BACKGROUND;
+
 
     /* Register the window class, and if it fails quit the program */
     if (!RegisterClassEx (&wincl))
@@ -99,25 +101,33 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
 
 
 
-/*  This function is called by the Windows function DispatchMessage()  */
 
+/*  This function is called by the Windows function DispatchMessage()  */
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static int x1, x2, y1, y2, a, b ;
+    static int x0, y0, size, width, height;
+    static int x1, x2, y1, y2, a, b;
     static int radius;
-
+    static int numpoints = 10000;
+    static int pointscount = 200;
+    static POINT controlPoints[10];
+    static int numControlPoints = 0;
+    static double tension = 0.5;
     static COLORREF color = RGB(255, 255, 255);
+    static int convexNum = 0;
+    static int counter = 0;
+    static POINT* shapePoints = new POINT[convexNum];
     HDC hdc = GetDC(hwnd);
 
     HBRUSH hBrush;
     HBRUSH hOldBrush;
 
-
     LineAlgorithm line;
     CircleAlgorithm circle;
     EllipseAlgorithm ellipse;
     ClippingAlgorithm clipping;
-
+    CurveAlgorithm curve;
+    FillingAlgorithm filling;
     switch (message)
     {
     case WM_COMMAND:
@@ -130,31 +140,119 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             FillRect(hdc, &rect, hOldBrush);
             ReleaseDC(hwnd, hdc);
             break;
+        /*case SAVE_SCREEN:
+            GetClientRect(hwnd, &rect);
+            int width = rect.right - rect.left;
+            int height = rect.bottom - rect.top;
+            // Create a vector to store the screen data
+            screenData.clear();
+            screenData.resize(height, vector<COLORREF>(width));
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    color = GetPixel(hdc, x, y);
+                    screenData[y][x] = color;
+                }
+            }
+            ReleaseDC(hwnd, hdc);
 
+            // Save the screen data to a file
+            ofstream file("screen_data.txt");
+            if (file.is_open())
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        file << screenData[y][x] << " ";
+                    }
+                    file << endl;
+                }
+                file.close();
+            }
+            else
+            {
+                MessageBox(hwnd, _T("Failed to save screen data to file!"), _T("Error"), MB_OK | MB_ICONERROR);
+            }
+            break;
+
+        case LOAD_FILE:
+            // Load the screen data from the file
+            ifstream file("screen_data.txt");
+            if (file.is_open())
+            {
+                screenData.clear();
+                string line;
+                while (getline(file, line))
+                {
+                    vector<COLORREF> row;
+                    istringstream iss(line);
+                    while (iss >> color)
+                    {
+                        row.push_back(color);
+                    }
+                    screenData.push_back(row);
+                }
+                file.close();
+
+                // Set the loaded screen data on the window
+                int width = screenData[0].size();
+                int height = screenData.size();
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        color = screenData[y][x];
+                        SetPixel(hdc, x, y, color);
+                    }
+                }
+                ReleaseDC(hwnd, hdc);
+            }
+            else
+            {
+                MessageBox(hwnd, _T("Failed to load screen data from file!"), _T("Error"), MB_OK | MB_ICONERROR);
+            }
+            break;
+        */
         case FILE_MENU_EXIT:
             DestroyWindow(hwnd);
             break;
+        /* case MOUSE_CURSOR:
+             const wchar_t* filePath = L"E:\\Uni\\Year 3 2nd semester\\graphics\\labs\\project_2d_package\\icons8-mouse-50.cur";
+             HCURSOR hCursor = (HCURSOR)LoadImage(NULL, (LPCSTR)filePath, IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+             if (hCursor == NULL)
+             {
+                 return 1;
+             }
 
+             SetCursor(hCursor);
+             ShowCursor(TRUE);
+             DestroyCursor(hCursor);
+             SetCursor(LoadCursor(NULL, IDC_ARROW));
+             break;
+
+        */
         case BLACK_CLR:
             color = RGB(0,0,0);
             break;
         case RED_CLR:
-            color = RGB(255,0,0);
+            color = RGB(164, 0, 2);
             break;
         case GREEN_CLR:
-            color = RGB(0,255,0);
+            color = RGB(0, 129, 64);
             break;
         case BLUE_CLR:
-            color = RGB(0,0,255);
+            color = RGB(7, 120, 186);
             break;
         case PURPLE_CLR:
-            color = RGB(255,0,255);
+            color = RGB(121, 37, 199);
             break;
         case YELLOW_CLR:
-            color = RGB(255,255,0);
+            color = RGB(245, 220, 6);
             break;
         case PINK_CLR:
-            color = RGB(255,192,203);
+            color = RGB(253, 93, 168);
             break;
 
         case WHITE_BG:
@@ -164,69 +262,124 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             InvalidateRect(hwnd, NULL, TRUE);
             break;
 
-
         case LINE_DDA:
-            // Draw DDA line
             line.drawLineDDA(hdc, x1, y1, x2, y2, color);
             break;
 
         case LINE_MIDPOINT:
-            // Draw midpoint line
             line.drawLineMidPoint(hdc, x1, y1, x2, y2, color);
             break;
 
         case LINE_PARAMETRIC:
-            // Draw parametric line
             line.drawLineParametric(hdc, x1, y1, x2, y2, color);
             break;
 
         case CIRCLE_DIRECT:
-            // Draw Circle Direct
             circle.drawCircleDirect(hdc, x1,y1,radius, color);
             break;
         case CIRCLE_POLAR:
-            //Draw Circle polar
             circle.drawCirclePolar(hdc, x1,y1,radius, color);
             break;
         case CIRCLE_ITERATIVE_POLAR:
-            //Draw circle iterative polar
             circle.drawCircleIterativePolar(hdc, x1,y1,radius, color);
             break;
         case CIRCLE_MIDPOINT:
-            // Draw circle midpoint
             circle.drawCircleBresenham(hdc, x1,y1,radius, color);
             break;
         case CIRCLE_MODIFIED_MIDPOINT:
-            // Draw circle modified midpoint
             circle.drawCircleFasterBresenham(hdc, x1,y1,radius, color);
             break;
 
         case ELLIPSE_DIRECT:
-            // Draw ellipse direct
             ellipse.drawEllipseDirect(hdc, x1,y1,a,b, color);
             break;
         case ELLIPSE_POLAR:
-            // Draw ellipse polar
             ellipse.drawEllipsePolar(hdc, x1,y1,a,b, color);
             break;
         case ELLIPSE_MIDPOINT:
-            // Draw ellipse midpoint
             ellipse.drawEllipseBresenham(hdc, x1,y1,a,b, color);
             break;
 
         case CLIPPING_USING_RECTANGLE:
             Rectangle(hdc,100,300,500,100);
-            clipping.CohenRect(hdc,x1,y1,x2,y2,100,300,500,100);
+            clipping.CohenSuth(hdc,x1,y1,x2,y2,100,300,500,100);
+
+            break;
+        case CLIPPING_USING_RECTANGLE_POLYGON:
+            Rectangle(hdc,100,300,500,100);
+            clipping.PolygonClip(hdc,shapePoints,convexNum,100,300,500,100);
+            counter = 0;
+            break;
+        case CLIPPING_USING_SQUARE:
+            Rectangle(hdc,100,100,400,400);
+            clipping.PolygonClip(hdc,shapePoints,3,100,100,400,400);
+            counter = 0;
+            break;
+        case CLIPPING_USING_CIRCLE:
+            clipping.CohenSuthCircle(hdc, x1,y1,x2,y2, x1,y1,radius);
+            break;
+        case CARDINAL_SPLINE_CURVE:
+            curve.DrawCardinalSpline(hdc, controlPoints, numControlPoints, tension, numpoints, color);
+            numControlPoints = 0;
+            break;
+
+        case FILL_CIRCLE_WITH_LINES:
+            filling.FillQuarterCircle(hdc, x1, y1, radius, color);
+            ReleaseDC(hwnd, hdc);
+            break;
+
+        case FILL_CIRCLE_WITH_CIRCLES:
+            fillCircleWithConcentricCircles(hdc, x1,y1,radius, 100, color);
+            break;
+
+        case FILL_SQUARE_WITH_HERMITE_CURVE:
+            filling.FillSquareWithVerticalCurves(hdc, x0, y0, size, numpoints, color);
+            break;
+
+        case FILL_RECTANGLE_WITH_BEZIER_CURVE:
+            filling.FillRectangleWithHorizontalCurves(hdc, x0, y0, width, height, pointscount, color);
+            break;
+
+        case CONVEX_FILL:
+            filling.ConvexFill(hdc, shapePoints, convexNum, color);
+            counter = 0;
+            break;
+        case NON_CONVEX_FILL:
+            filling.GeneralPolygonFill(hdc, shapePoints, convexNum,color);
+            counter = 0;
+            break;
+
+        case RECURSIVE_FLOOD_FILL:
+            filling.FloodFill(hdc,x1,y1,color, color);
+            break;
+        case NON_RECURSIVE_FLOOD_FILL:
+            filling.NRFloodFill(hdc,x1,y1,color, color);
             break;
 
 
 
         }
         break;
-
     case WM_LBUTTONDOWN:
+        if (counter <= convexNum)
+        {
+            shapePoints[counter].x = LOWORD(lParam);
+            shapePoints[counter].y = HIWORD(lParam);
+            counter++;
+        }
+
         x1 = LOWORD(lParam);
         y1 = HIWORD(lParam);
+        if (numControlPoints < 10)
+        {
+            int xPos = LOWORD(lParam);
+            int yPos = HIWORD(lParam);
+            controlPoints[numControlPoints].x = xPos;
+            controlPoints[numControlPoints].y = yPos;
+            numControlPoints++;
+        }
+        x0 = LOWORD(lParam);
+        y0 = HIWORD(lParam);
         break;
 
     case WM_RBUTTONDOWN:
@@ -235,12 +388,14 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         a = abs(x2 - x1);
         b = abs(y2 - y1);
         radius = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        size = abs(x0 - LOWORD(lParam));
+        width = abs(x2 - x0);
+        height = abs(y2 - y0);
         break;
 
-
-
-
     case WM_CREATE:
+        cout << "Enter the number of points for convex fill: ";
+        cin >> convexNum;
         addMenu(hwnd);
         break;
 
@@ -257,16 +412,13 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 void addMenu(HWND hwnd)
 {
     hMenu = CreateMenu();
-    HMENU hFileMenu = CreateMenu();
     HMENU hMenuItem = CreateMenu();
     HMENU hColorMenu = CreateMenu();
     HMENU hBGColorMenu = CreateMenu();
 
-    AppendMenu(hMenu, MF_POPUP, (UINT_PTR) hFileMenu, "Load File");
-    AppendMenu(hFileMenu, MF_STRING,FILE_MENU_NEW, "File" );
+    AppendMenu(hMenu, MF_STRING, LOAD_FILE, "Load");
+    AppendMenu(hMenu, MF_STRING, SAVE_SCREEN, "Save");
 
-
-    AppendMenu(hMenu, MF_STRING, 1, "Save");
     AppendMenu(hMenu, MF_STRING, 1, "Brush");
     AppendMenu(hMenu, MF_POPUP, (UINT_PTR) hColorMenu, "Color");
     AppendMenu(hColorMenu, MF_STRING, RED_CLR, "Red");
@@ -277,7 +429,9 @@ void addMenu(HWND hwnd)
     AppendMenu(hColorMenu, MF_STRING, PINK_CLR, "Pink");
     AppendMenu(hColorMenu, MF_STRING, BLACK_CLR, "Black");
 
-    AppendMenu(hMenu, MF_STRING, 1, "Mouse");
+    AppendMenu(hMenu, MF_STRING, MOUSE_CURSOR, "Mouse");
+
+
     AppendMenu(hMenu, MF_POPUP, (UINT_PTR) hBGColorMenu, "Background Color");
     AppendMenu(hBGColorMenu, MF_STRING, WHITE_BG, "White");
 
@@ -300,7 +454,6 @@ void addMenu(HWND hwnd)
     AppendMenu(hMenuItem, MF_STRING, FILL_SQUARE_WITH_HERMITE_CURVE, "Fill Square with Hermite Curve (vertical)");
     AppendMenu(hMenuItem, MF_STRING, FILL_RECTANGLE_WITH_BEZIER_CURVE, "Fill Rectangle with Bezier Curve (horizontal)");
 
-
     AppendMenu(hMenuItem, MF_STRING, CONVEX_FILL, "Convex Fill");
     AppendMenu(hMenuItem, MF_STRING, NON_CONVEX_FILL, "Non Convex Fill");
     AppendMenu(hMenuItem, MF_STRING, RECURSIVE_FLOOD_FILL, "Recursive Flood Fill");
@@ -312,7 +465,9 @@ void addMenu(HWND hwnd)
     AppendMenu(hMenuItem, MF_STRING, ELLIPSE_MIDPOINT, "Ellipse Midpoint");
 
 
-    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE, "Clipping using Rectangle (point, line, polygon)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE, "Clipping using Rectangle (point, line)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE_POLYGON, "Clipping using Rectangle (Polygon)");
+
     AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_SQUARE, "Clipping using Square (point, line)");
     AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_CIRCLE, "Clipping using Circle (point, line)");
 

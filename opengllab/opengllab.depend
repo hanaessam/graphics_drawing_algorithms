@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1683709428 source:e:\uni\year 3 2nd semester\graphics\labs\opengllab\main.c
+	<windows.h>
+	<gl/gl.h>
+

@@ -1,0 +1,7 @@
+# ninja log v5
+1	2917	7054174586422783	CMakeFiles/project_2d_package.dir/circlealgorithm.cpp.obj	96bf7a628a35d5b4
+27	2923	7054174586422783	CMakeFiles/project_2d_package.dir/linealgorithm.cpp.obj	efbbe9f133d7b93
+37	3525	7054174592515065	CMakeFiles/project_2d_package.dir/ellipsealgorithm.cpp.obj	a9cacec04aef833
+11	3530	7054174592515065	CMakeFiles/project_2d_package.dir/clippingalgorithm.cpp.obj	8f0679a02c21760a
+19	3551	7054174592754925	CMakeFiles/project_2d_package.dir/main.cpp.obj	3206de0f0f62d7a7
+3551	3795	7054174595162146	project_2d_package.exe	2063ae6b399fd372

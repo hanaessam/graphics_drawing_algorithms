@@ -45,8 +45,12 @@
 		<Unit filename="circlealgorithm.h" />
 		<Unit filename="clippingalgorithm.cpp" />
 		<Unit filename="clippingalgorithm.h" />
+		<Unit filename="curvealgorithm.cpp" />
+		<Unit filename="curvealgorithm.h" />
 		<Unit filename="ellipsealgorithm.cpp" />
 		<Unit filename="ellipsealgorithm.h" />
+		<Unit filename="fillingalgorithm.cpp" />
+		<Unit filename="fillingalgorithm.h" />
 		<Unit filename="ids.h" />
 		<Unit filename="linealgorithm.cpp" />
 		<Unit filename="linealgorithm.h" />
