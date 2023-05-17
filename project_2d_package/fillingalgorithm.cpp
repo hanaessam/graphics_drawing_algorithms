@@ -1,6 +1,7 @@
 #include "fillingalgorithm.h"
 #include "curvealgorithm.h"
 #include "linealgorithm.h"
+#include "circlealgorithm.h"
 #include <algorithm>
 #include <cmath>
 #include <stack>
@@ -197,6 +198,51 @@ void FillingAlgorithm::DrawHorizontalBezierCurve(HDC hdc, int x0, int y, int wid
     }
 }
 
+//Utility function to get the quarter
+void DrawQuarterCircles(HDC hdc, int xc, int yc, int a, int b, int quarter, COLORREF color)
+{
+    if (quarter == 1) {
+        SetPixel(hdc, xc + a, yc - b, color);
+        SetPixel(hdc, xc + b, yc - a, color);
+    }
+    else if (quarter == 2) {
+        SetPixel(hdc, xc + a, yc + b, color);
+        SetPixel(hdc, xc + b, yc + a, color);
+
+    }
+    else if (quarter == 3) {
+        SetPixel(hdc, xc - a, yc + b, color);
+        SetPixel(hdc, xc - b, yc + a, color);
+    }
+    else {
+        SetPixel(hdc, xc - b, yc - a, color);
+        SetPixel(hdc, xc - a, yc - b, color);
+
+    }
+}
+void DarwQuarterLines(HDC hdc, int xc, int yc, int a, int b, int quarter, COLORREF color)
+{
+    LineAlgorithm line;
+    if (quarter == 1) {
+        line.drawLineMidPoint(hdc, xc, yc, xc + a, yc - b, color);
+        line.drawLineMidPoint(hdc, xc, yc, xc + b, yc - a, color);
+    }
+    else if (quarter == 2) {
+        line.drawLineMidPoint(hdc, xc, yc, xc + a, yc + b, color);
+        line.drawLineMidPoint(hdc, xc, yc, xc + b, yc + a, color);
+
+    }
+    else if (quarter == 3) {
+        line.drawLineMidPoint(hdc, xc, yc, xc - a, yc + b, color);
+        line.drawLineMidPoint(hdc, xc, yc, xc - b, yc + a, color);
+    }
+    else {
+        line.drawLineMidPoint(hdc, xc, yc, xc - b, yc - a, color);
+        line.drawLineMidPoint(hdc, xc, yc, xc - a, yc - b, color);
+
+    }
+}
+
 // Function to fill a rectangle with horizontal Bezier curves
 void FillingAlgorithm::FillRectangleWithHorizontalCurves(HDC hdc, int x0, int y0, int width, int height, int numpoints, COLORREF color)
 {
@@ -222,37 +268,56 @@ void FillingAlgorithm::FillRectangleWithHorizontalCurves(HDC hdc, int x0, int y0
 }
 
 
-void FillingAlgorithm::FillQuarterCircle(HDC hdc, int centerX, int centerY, int radius, COLORREF color)
+void FillingAlgorithm::FillQuarterCircle(HDC hdc, int xc, int yc, int r, int quarter, COLORREF color)
 {
-    int x = 0;
-    int y = radius;
-    int d = 1 - radius;
-    LineAlgorithm line;
+    CircleAlgorithm circle;
+    double x = r, y = 0;
+    double dtheta = (double)1 / r;
+    double st = sin(dtheta), ct = cos(dtheta);
 
-    while (x <= y)
+    while (x > y)
     {
-        // Draw DDA line from (centerX, centerY) to (centerX + x, centerY + y)
-        line.drawLineDDA(hdc, centerX, centerY, centerX + x, centerY + y, color);
-        line.drawLineDDA(hdc, centerX, centerY, centerX + y, centerY + x, color);
-        if (d < 0)
-        {
-            d += 2 * x + 3;
-        }
-        else
-        {
-            d += 2 * (x - y) + 5;
-            y--;
-        }
-        x++;
+        double x1 = x * ct - y * st;
+        y = x * st + y * ct;
+        x = x1;
+        circle.draw8Points(hdc, xc, yc, round(x), round(y), color);
+        DarwQuarterLines(hdc, xc, yc, round(x), round(y), quarter, color);
+
     }
 }
-void FillingAlgorithm::FillCircleWithChircles(HDC hdc, int centerX, int centerY, int radius, int numCircles, COLORREF color)
+
+
+void FillingAlgorithm::FillCircleWithChircles(HDC hdc, int xc, int yc, int r, int quarter, COLORREF color)
 {
-    for (int i = numCircles; i >= 1; i--)
+    CircleAlgorithm circle;
+    double x = r, y = 0;
+    double dtheta = (double)1 / r;
+    double st = sin(dtheta), ct = cos(dtheta);
+
+    while (x > y)
     {
-        int smallerRadius = static_cast<int>(radius * i / numCircles);
-        CircleAlgorithm circle;
-        circle.drawCircleDirect(hdc, centerX, centerY, smallerRadius, color);
+        double x1 = x * ct - y * st;
+        y = x * st + y * ct;
+        x = x1;
+        circle.draw8Points(hdc, xc, yc, round(x), round(y), color);
+    }
+
+
+    while (r) {
+        dtheta = (double)1 / r;
+        st = sin(dtheta);
+        ct = cos(dtheta);
+        x = r;
+        y = 0;
+        while (x > y)
+        {
+            double x1 = x * ct - y * st;
+            y = x * st + y * ct;
+            x = x1;
+            DrawQuarterCircles(hdc, xc, yc, round(x), round(y), quarter, color);
+        }
+        r--;
+
     }
 }
 
@@ -260,12 +325,13 @@ void FillingAlgorithm::FillCircleWithChircles(HDC hdc, int centerX, int centerY,
 void FillingAlgorithm::FloodFill(HDC hdc,int x,int y,COLORREF Cb,COLORREF Cf)
 {
     COLORREF C=GetPixel(hdc,x,y);
-    if(C==Cb || C==Cf)return;
+    if(C==Cb || C==Cf)
+        return;
     SetPixel(hdc,x,y,Cf);
-    FloodFill(hdc,x+1,y,Cb,Cf);
-    FloodFill(hdc,x-1,y,Cb,Cf);
     FloodFill(hdc,x,y+1,Cb,Cf);
+    FloodFill(hdc,x+1,y,Cb,Cf);
     FloodFill(hdc,x,y-1,Cb,Cf);
+    FloodFill(hdc,x-1,y,Cb,Cf);
 }
 void FillingAlgorithm::NRFloodFill(HDC hdc,int x,int y,COLORREF Cb,COLORREF Cf)
 {

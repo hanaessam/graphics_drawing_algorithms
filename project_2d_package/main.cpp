@@ -15,6 +15,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include "ids.h"
 
 
@@ -28,11 +29,15 @@ LRESULT CALLBACK WindowProcedure (HWND, UINT, WPARAM, LPARAM);
 
 /*  Make the class name into a global variable  */
 TCHAR szClassName[ ] = _T("CodeBlocksWindowsApp");
-vector<std::vector<COLORREF>> screenData;
-
-void addMenu(HWND);
-
 HMENU hMenu;
+void addMenu(HWND);
+void SaveScreenDataToFile(HWND, const string&);
+void LoadScreenDataFromFile(HWND, const string&);
+HBRUSH hSolidBrush;
+HBRUSH hHatchedBrush;
+bool useHatchedBrush = false;
+
+
 
 int WINAPI WinMain (HINSTANCE hThisInstance,
                     HINSTANCE hPrevInstance,
@@ -59,6 +64,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
     wincl.cbWndExtra = 0;                      /* structure or the window instance */
     /* Use Windows's default colour as the background of the window */
     wincl.hbrBackground = (HBRUSH) COLOR_BACKGROUND;
+
 
 
     /* Register the window class, and if it fails quit the program */
@@ -97,17 +103,18 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
     return messages.wParam;
 }
 
-
-
-
-
-
+HBRUSH SelectHatchedBrush(HDC hdc, HBRUSH hSolidBrush, HBRUSH hHatchedBrush, bool useHatchedBrush)
+{
+    HBRUSH hSelectedBrush = useHatchedBrush ? hHatchedBrush : hSolidBrush;
+    return (HBRUSH)SelectObject(hdc, hSelectedBrush);
+}
 /*  This function is called by the Windows function DispatchMessage()  */
 LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static int x0, y0, size, width, height;
     static int x1, x2, y1, y2, a, b;
-    static int radius;
+    static int xleft, xright,ytop, ybottom;
+    static int radius, squareRadius;
     static int numpoints = 10000;
     static int pointscount = 200;
     static POINT controlPoints[10];
@@ -116,8 +123,10 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     static COLORREF color = RGB(255, 255, 255);
     static int convexNum = 0;
     static int counter = 0;
+    static int quarter = 0;
     static POINT* shapePoints = new POINT[convexNum];
     HDC hdc = GetDC(hwnd);
+
 
     HBRUSH hBrush;
     HBRUSH hOldBrush;
@@ -128,6 +137,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     ClippingAlgorithm clipping;
     CurveAlgorithm curve;
     FillingAlgorithm filling;
+
     switch (message)
     {
     case WM_COMMAND:
@@ -140,99 +150,33 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             FillRect(hdc, &rect, hOldBrush);
             ReleaseDC(hwnd, hdc);
             break;
-        /*case SAVE_SCREEN:
-            GetClientRect(hwnd, &rect);
-            int width = rect.right - rect.left;
-            int height = rect.bottom - rect.top;
-            // Create a vector to store the screen data
-            screenData.clear();
-            screenData.resize(height, vector<COLORREF>(width));
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    color = GetPixel(hdc, x, y);
-                    screenData[y][x] = color;
-                }
-            }
-            ReleaseDC(hwnd, hdc);
-
-            // Save the screen data to a file
-            ofstream file("screen_data.txt");
-            if (file.is_open())
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        file << screenData[y][x] << " ";
-                    }
-                    file << endl;
-                }
-                file.close();
-            }
-            else
-            {
-                MessageBox(hwnd, _T("Failed to save screen data to file!"), _T("Error"), MB_OK | MB_ICONERROR);
-            }
+        case SAVE_SCREEN:
+            SaveScreenDataToFile(hwnd, "screen_data.txt");
             break;
 
         case LOAD_FILE:
-            // Load the screen data from the file
-            ifstream file("screen_data.txt");
-            if (file.is_open())
-            {
-                screenData.clear();
-                string line;
-                while (getline(file, line))
-                {
-                    vector<COLORREF> row;
-                    istringstream iss(line);
-                    while (iss >> color)
-                    {
-                        row.push_back(color);
-                    }
-                    screenData.push_back(row);
-                }
-                file.close();
-
-                // Set the loaded screen data on the window
-                int width = screenData[0].size();
-                int height = screenData.size();
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        color = screenData[y][x];
-                        SetPixel(hdc, x, y, color);
-                    }
-                }
-                ReleaseDC(hwnd, hdc);
-            }
-            else
-            {
-                MessageBox(hwnd, _T("Failed to load screen data from file!"), _T("Error"), MB_OK | MB_ICONERROR);
-            }
+            LoadScreenDataFromFile(hwnd, "screen_data.txt");
             break;
-        */
+
         case FILE_MENU_EXIT:
             DestroyWindow(hwnd);
             break;
-        /* case MOUSE_CURSOR:
-             const wchar_t* filePath = L"E:\\Uni\\Year 3 2nd semester\\graphics\\labs\\project_2d_package\\icons8-mouse-50.cur";
-             HCURSOR hCursor = (HCURSOR)LoadImage(NULL, (LPCSTR)filePath, IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
-             if (hCursor == NULL)
-             {
-                 return 1;
-             }
 
-             SetCursor(hCursor);
-             ShowCursor(TRUE);
-             DestroyCursor(hCursor);
-             SetCursor(LoadCursor(NULL, IDC_ARROW));
-             break;
+        case MOUSE_CURSOR:
+            SetClassLongPtr(hwnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(LoadCursor(nullptr, IDC_CROSS)));
+            RedrawWindow(hwnd, nullptr, nullptr, RDW_ERASE | RDW_INVALIDATE);
+            break;
 
-        */
+
+        case CHANGE_BRUSH:
+            // Toggle between solid and hatched brush
+            useHatchedBrush = !useHatchedBrush;
+            SelectHatchedBrush(hdc, hSolidBrush, hHatchedBrush, useHatchedBrush);
+            rect = { 50, 50, 200, 200 };
+            FillRect(hdc, &rect, SelectHatchedBrush(hdc, hSolidBrush, hHatchedBrush, useHatchedBrush));
+            break;
+
+
         case BLACK_CLR:
             color = RGB(0,0,0);
             break;
@@ -300,36 +244,55 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             ellipse.drawEllipseBresenham(hdc, x1,y1,a,b, color);
             break;
 
-        case CLIPPING_USING_RECTANGLE:
+        case CLIPPING_USING_RECTANGLE_LINE:
             Rectangle(hdc,100,300,500,100);
             clipping.CohenSuth(hdc,x1,y1,x2,y2,100,300,500,100);
+            counter = 0;
+            break;
 
+        case CLIPPING_USING_RECTANGLE_POINT:
+            Rectangle(hdc,100,300,500,100);
+            clipping.PointClipping(hdc,x1,y1,100,300,500,100, color);
             break;
         case CLIPPING_USING_RECTANGLE_POLYGON:
-            Rectangle(hdc,100,300,500,100);
-            clipping.PolygonClip(hdc,shapePoints,convexNum,100,300,500,100);
+            Rectangle(hdc,100,100,400,400);
+            clipping.PolygonClip(hdc,shapePoints,convexNum,100,100,400,400);
             counter = 0;
             break;
-        case CLIPPING_USING_SQUARE:
+        case CLIPPING_USING_SQUARE_LINE:
             Rectangle(hdc,100,100,400,400);
             clipping.PolygonClip(hdc,shapePoints,3,100,100,400,400);
-            counter = 0;
+            //clipping.clippedLineWithSquare(hdc,ytop,xleft,squareRadius,color);
+            counter =0;
             break;
-        case CLIPPING_USING_CIRCLE:
-            clipping.CohenSuthCircle(hdc, x1,y1,x2,y2, x1,y1,radius);
+
+        case CLIPPING_USING_SQUARE_POINT:
+            Rectangle(hdc,xleft, ytop, xright, ybottom);
+            clipping.CohenSuth(hdc, x1, y1, x2, y2, xleft, ytop, xright, ybottom);
+            clipping.PointClipping(hdc,x1,y1,xleft, ytop, xright, ybottom, color);
             break;
+
+        case CLIPPING_USING_CIRCLE_LINE:
+            //circle.drawCircleBresenham(hdc,x1,y1,radius,color);
+            clipping.clippedLineWithCircle(hdc,x1,y1,x2,y2,color,x1,y1,radius);
+            break;
+
+        case CLIPPING_USING_CIRCLE_POINT:
+            circle.drawCircleBresenham(hdc,x1,y1,radius,color);
+            clipping.clippedPointWithCircle(hdc,x1,y1,color,x1,y1,radius);
+            break;
+
         case CARDINAL_SPLINE_CURVE:
             curve.DrawCardinalSpline(hdc, controlPoints, numControlPoints, tension, numpoints, color);
             numControlPoints = 0;
             break;
 
         case FILL_CIRCLE_WITH_LINES:
-            filling.FillQuarterCircle(hdc, x1, y1, radius, color);
-            ReleaseDC(hwnd, hdc);
+            filling.FillQuarterCircle(hdc, x1,y1,radius,quarter,color);
             break;
 
         case FILL_CIRCLE_WITH_CIRCLES:
-            fillCircleWithConcentricCircles(hdc, x1,y1,radius, 100, color);
+            filling.FillCircleWithChircles(hdc, x1,y1,radius,quarter,color);
             break;
 
         case FILL_SQUARE_WITH_HERMITE_CURVE:
@@ -380,23 +343,38 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         }
         x0 = LOWORD(lParam);
         y0 = HIWORD(lParam);
+
+        xleft = LOWORD(lParam);
+        ytop = HIWORD(lParam);
         break;
 
     case WM_RBUTTONDOWN:
         x2 = LOWORD(lParam);
         y2 = HIWORD(lParam);
+
+        xright = LOWORD(lParam);
+        ybottom = HIWORD(lParam);
+
         a = abs(x2 - x1);
         b = abs(y2 - y1);
         radius = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        squareRadius = min(xright, xleft);
         size = abs(x0 - LOWORD(lParam));
         width = abs(x2 - x0);
         height = abs(y2 - y0);
+
         break;
 
     case WM_CREATE:
         cout << "Enter the number of points for convex fill: ";
         cin >> convexNum;
+        cout << "Enter the quarter of the circle you want to fill: ";
+        cin >> quarter;
         addMenu(hwnd);
+        // Create the solid brush
+        hSolidBrush = CreateSolidBrush(RGB(0, 0, 0));
+        // Create the hatched brush
+        hHatchedBrush = CreateHatchBrush(HS_DIAGCROSS, RGB(0, 0, 255));
         break;
 
     case WM_DESTROY:
@@ -419,7 +397,9 @@ void addMenu(HWND hwnd)
     AppendMenu(hMenu, MF_STRING, LOAD_FILE, "Load");
     AppendMenu(hMenu, MF_STRING, SAVE_SCREEN, "Save");
 
-    AppendMenu(hMenu, MF_STRING, 1, "Brush");
+    AppendMenu(hMenu, MF_STRING, CHANGE_BRUSH, "Brush");
+
+
     AppendMenu(hMenu, MF_POPUP, (UINT_PTR) hColorMenu, "Color");
     AppendMenu(hColorMenu, MF_STRING, RED_CLR, "Red");
     AppendMenu(hColorMenu, MF_STRING, GREEN_CLR, "Green");
@@ -465,11 +445,15 @@ void addMenu(HWND hwnd)
     AppendMenu(hMenuItem, MF_STRING, ELLIPSE_MIDPOINT, "Ellipse Midpoint");
 
 
-    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE, "Clipping using Rectangle (point, line)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE_LINE, "Clipping using Rectangle (line)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE_POINT, "Clipping using Rectangle (point)");
     AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_RECTANGLE_POLYGON, "Clipping using Rectangle (Polygon)");
 
-    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_SQUARE, "Clipping using Square (point, line)");
-    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_CIRCLE, "Clipping using Circle (point, line)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_SQUARE_LINE, "Clipping using Square (line)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_SQUARE_POINT, "Clipping using Square (point)");
+
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_CIRCLE_LINE, "Clipping using Circle (line)");
+    AppendMenu(hMenuItem, MF_STRING, CLIPPING_USING_CIRCLE_POINT, "Clipping using Circle (point)");
 
     AppendMenu(hMenu, MF_STRING, CLEAR_SCREEN, "Clear Screen");
     AppendMenu(hMenu, MF_STRING, FILE_MENU_EXIT, "Exit");
@@ -478,3 +462,95 @@ void addMenu(HWND hwnd)
     SetMenu(hwnd, hMenu);
 
 }
+
+
+
+void SaveScreenDataToFile(HWND hwnd, const string& filename)
+{
+    HDC hdc = GetDC(hwnd);
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    int widthScreen = rect.right - rect.left;
+    int heightScreen = rect.bottom - rect.top;
+
+    // Create a vector to store the screen data
+    vector<vector<COLORREF>> screenData(heightScreen,vector<COLORREF>(widthScreen));
+
+    for (int y = 0; y < heightScreen; y++)
+    {
+        for (int x = 0; x < widthScreen; x++)
+        {
+            COLORREF color = GetPixel(hdc, x, y);
+            screenData[y][x] = color;
+        }
+    }
+
+    ReleaseDC(hwnd, hdc);
+
+    // Save the screen data to a file
+    ofstream file(filename);
+    if (file.is_open())
+    {
+        for (int y = 0; y < heightScreen; y++)
+        {
+            for (int x = 0; x < widthScreen; x++)
+            {
+                file << hex << setw(6) <<setfill('0') << screenData[y][x] << " ";
+            }
+            file << endl;
+        }
+        file.close();
+        MessageBox(hwnd, _T("Screen data saved successfully!"), _T("Success"), MB_OK | MB_ICONINFORMATION);
+    }
+    else
+    {
+        MessageBox(hwnd, _T("Failed to save screen data to file!"), _T("Error"), MB_OK | MB_ICONERROR);
+    }
+}
+
+void LoadScreenDataFromFile(HWND hwnd, const string& filename)
+{
+    HDC hdc = GetDC(hwnd);
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    int widthScreen = rect.right - rect.left;
+    int heightScreen = rect.bottom - rect.top;
+
+    ifstream file(filename);
+    if (file.is_open())
+    {
+        vector<vector<COLORREF>> screenData(heightScreen, vector<COLORREF>(widthScreen));
+
+        for (int y = 0; y < heightScreen; y++)
+        {
+            for (int x = 0; x < widthScreen; x++)
+            {
+                if (!(file >> hex >> screenData[y][x]))
+                {
+                    MessageBox(hwnd, _T("Failed to read screen data from file!"), _T("Error"), MB_OK | MB_ICONERROR);
+                    file.close();
+                    ReleaseDC(hwnd, hdc);
+                    return;
+                }
+            }
+        }
+
+        file.close();
+
+        for (int y = 0; y < heightScreen; y++)
+        {
+            for (int x = 0; x < widthScreen; x++)
+            {
+                SetPixel(hdc, x, y, screenData[y][x]);
+            }
+        }
+
+        MessageBox(hwnd, _T("Screen data loaded successfully!"), _T("Success"), MB_OK | MB_ICONINFORMATION);
+    }
+    else
+    {
+        MessageBox(hwnd, _T("Failed to open screen data file!"), _T("Error"), MB_OK | MB_ICONERROR);
+    }
+    ReleaseDC(hwnd, hdc);
+}
+

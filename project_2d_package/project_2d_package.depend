@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1684189302 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\main.cpp
+1684308913 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\main.cpp
 	<tchar.h>
 	<windows.h>
 	<commctrl.h>
@@ -10,6 +10,7 @@
 	<fstream>
 	<sstream>
 	<string>
+	<iomanip>
 	"ids.h"
 
 1683301682 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\linealgorithm.h
@@ -67,7 +68,7 @@
 	<iostream>
 	<cmath>
 
-1684188237 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\ids.h
+1684278788 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\ids.h
 	"linealgorithm.h"
 	"circlealgorithm.h"
 	"ellipseAlgorithm.h"
@@ -75,14 +76,16 @@
 	"curvealgorithm.h"
 	"fillingalgorithm.h"
 
-1684189372 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.cpp
+1684307433 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.cpp
 	"clippingalgorithm.h"
+	"linealgorithm.h"
+	<algorithm>
 	<tchar.h>
 	<windows.h>
 	<iostream>
 	<cmath>
 
-1684189215 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.h
+1684271809 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\clippingalgorithm.h
 	<vector>
 	<windows.h>
 
@@ -93,14 +96,15 @@
 	"curvealgorithm.h"
 	<cmath>
 
-1684182949 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\fillingalgorithm.h
+1684270618 e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\fillingalgorithm.h
 	<list>
 	<windows.h>
 
-1684183102 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\fillingalgorithm.cpp
+1684271517 source:e:\uni\year 3 2nd semester\graphics\labs\project_2d_package\fillingalgorithm.cpp
 	"fillingalgorithm.h"
 	"curvealgorithm.h"
 	"linealgorithm.h"
+	"circlealgorithm.h"
 	<algorithm>
 	<cmath>
 	<stack>

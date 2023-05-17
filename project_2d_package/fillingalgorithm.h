@@ -48,8 +48,8 @@ public:
     void FillSquareWithVerticalCurves(HDC hdc, int x0, int y0, int size, int numpoints, COLORREF color);
     void DrawHorizontalBezierCurve(HDC hdc, int x0, int y, int width, int dx0, int dx1, int numpoints, COLORREF color);
     void FillRectangleWithHorizontalCurves(HDC hdc, int x0, int y0, int width, int height, int numpoints, COLORREF color);
-    void FillQuarterCircle(HDC hdc, int centerX, int centerY, int radius, COLORREF color);
-    void FillCircleWithChircles(HDC hdc, int centerX, int centerY, int radius, int numCircles, COLORREF color);
+    void FillQuarterCircle(HDC hdc, int xc, int yc, int r, int quarter, COLORREF color);
+    void FillCircleWithChircles(HDC hdc, int xc, int yc, int r, int quarter, COLORREF color);
     void FloodFill(HDC hdc,int x,int y,COLORREF Cb,COLORREF Cf);
     void NRFloodFill(HDC hdc,int x,int y,COLORREF Cb,COLORREF Cf);
     virtual ~FillingAlgorithm();

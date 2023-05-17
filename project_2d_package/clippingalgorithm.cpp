@@ -1,8 +1,12 @@
 #include "clippingalgorithm.h"
+#include "linealgorithm.h"
+#include <algorithm>
 #include <tchar.h>
 #include <windows.h>
 #include <iostream>
 #include <cmath>
+
+using namespace std;
 
 struct Vertex
 {
@@ -21,15 +25,9 @@ union OutCode
         unsigned left:1, top:1, right:1, bottom:1;
     };
 };
-enum CircleSide
-{
-    LEFT,
-    TOP,
-    RIGHT,
-    BOTTOM
-};
 
-typedef std::vector<Vertex> VertexList;
+
+typedef vector<Vertex> VertexList;
 typedef bool (*IsInFunc)(Vertex& v,int edge);
 typedef Vertex (*IntersectFunc)(Vertex& v1,Vertex& v2,int edge);
 
@@ -99,6 +97,8 @@ bool InBottom(Vertex& v,int edge)
 {
     return v.y<=edge;
 }
+
+
 Vertex VIntersect(Vertex& v1,Vertex& v2,int xedge)
 {
     Vertex res;
@@ -113,11 +113,14 @@ Vertex HIntersect(Vertex& v1,Vertex& v2,int yedge)
     res.x=v1.x+(yedge-v1.y)*(v2.x-v1.x)/(v2.y-v1.y);
     return res;
 }
+
+
 void ClippingAlgorithm::PolygonClip(HDC hdc,POINT *p,int n,int xleft,int ytop,int xright,int ybottom)
 {
     VertexList vlist;
     for(int i=0; i<n; i++)
         vlist.push_back(Vertex(p[i].x,p[i].y));
+
     vlist= ClipWithEdge(vlist,xleft,InLeft,VIntersect);
     vlist= ClipWithEdge(vlist,ytop,InTop,HIntersect);
     vlist= ClipWithEdge(vlist,xright,InRight,VIntersect);
@@ -208,109 +211,59 @@ void ClippingAlgorithm::CohenSuth(HDC hdc, int xs, int ys, int xe,int ye, int xl
     }
 }
 
-
-OutCode GetCircleOutCode(int x, int y, int centerX, int centerY, int radiusSquared)
+void ClippingAlgorithm::clippedLineWithSquare(HDC hdc, int top, int left, int r, COLORREF color)
 {
-    OutCode out;
-    out.All = 0;
+    LineAlgorithm line;
+    int right = left + r;
+    int bottom = top + r;
 
-    if (x < centerX - radiusSquared)
-        out.left = 1;
-    else if (x > centerX + radiusSquared)
-        out.right = 1;
-
-    if (y < centerY - radiusSquared)
-        out.top = 1;
-    else if (y > centerY + radiusSquared)
-        out.bottom = 1;
-
-    // Check if the point is inside the circle
-    if ((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY) > radiusSquared)
-        out.All = 1;
-    return out;
-}
-
-void  GetCircleIntersect(int xs, int ys, int xe, int ye, int centerX, int centerY, int radiusSquared, CircleSide side, double* xi, double* yi)
-{
-    double dx = xe - xs;
-    double dy = ye - ys;
-
-// Calculate the intersection point with the circle
-    switch (side)
+    if (bottom < top)
     {
-    case LEFT:
-        *xi = centerX - sqrt(radiusSquared - (ys - centerY) * (ys - centerY));
-        *yi = ys + dy * (*xi - xs) / dx;
-        break;
-    case TOP:
-        *yi = centerY - sqrt(radiusSquared - (xs - centerX) * (xs - centerX));
-        *xi = xs + dx * (*yi - ys) / dy;
-        break;
-    case RIGHT:
-        *xi = centerX + sqrt(radiusSquared - (ys - centerY) * (ys - centerY));
-        *yi = ys + dy * (*xi - xs) / dx;
-        break;
-    case BOTTOM:
-        *yi = centerY + sqrt(radiusSquared - (xs - centerX) * (xs - centerX));
-        *xi = xs + dx * (*yi - ys) / dy;
-        break;
+        swap(top, bottom);
     }
-}
-
-
-void ClippingAlgorithm::CohenSuthCircle(HDC hdc, int xs, int ys, int xe, int ye, int centerX, int centerY, int radius)
-{
-    // Calculate the squared radius for faster distance comparison
-    int radiusSquared = radius * radius;
-
-    // Compute the outcodes for the start and end points
-    OutCode out1 = GetCircleOutCode(xs, ys, centerX, centerY, radiusSquared);
-    OutCode out2 = GetCircleOutCode(xe, ye, centerX, centerY, radiusSquared);
-
-    // Perform Cohen-Sutherland line clipping
-    while ((out1.All || out2.All) && !(out1.All & out2.All))
+    if (right < left)
     {
-        double xi, yi;
-
-        if (out1.All)
-        {
-            if (out1.left)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, LEFT, &xi, &yi);
-            else if (out1.top)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, TOP, &xi, &yi);
-            else if (out1.right)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, RIGHT, &xi, &yi);
-            else if (out1.bottom)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, BOTTOM, &xi, &yi);
-
-            xs = static_cast<int>(xi);
-            ys = static_cast<int>(yi);
-            out1 = GetCircleOutCode(xs, ys, centerX, centerY, radiusSquared);
-        }
-        else if (out2.All)
-        {
-            if (out2.left)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, LEFT, &xi, &yi);
-            else if (out2.top)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, TOP, &xi, &yi);
-            else if (out2.right)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, RIGHT, &xi, &yi);
-            else if (out2.bottom)
-                GetCircleIntersect(xs, ys, xe, ye, centerX, centerY, radiusSquared, BOTTOM, &xi, &yi);
-
-            xe = static_cast<int>(xi);
-            ye = static_cast<int>(yi);
-            out2 = GetCircleOutCode(xe, ye, centerX, centerY, radiusSquared);
-        }
+        swap(left, right);
     }
 
-    // If the line is completely outside the clipping window, don't draw it
-    if (!out1.All && !out2.All)
+    line.drawLineMidPoint(hdc, left, top, right, top, color);
+    line.drawLineMidPoint(hdc, right, top, right, bottom, color);
+    line.drawLineMidPoint(hdc, right, bottom, left, bottom, color);
+    line.drawLineMidPoint(hdc, left, bottom, left, top, color);
+}
+
+bool IntersectWithCircle(int xc, int yc, int r, int x, int y)//point clipping with circle
+{
+    int tmp = sqrt(pow(x - xc, 2) + pow(y - yc, 2));
+    if (tmp <= r)
+        return true;
+    else
+        return false;
+}
+
+void ClippingAlgorithm::clippedLineWithCircle(HDC hdc, int x1, int y1, int x2, int y2, COLORREF c, int xc, int yc, int r)// line clipping with circle
+{
+    for (double t = 0; t < 1; t += 0.001)
     {
-        MoveToEx(hdc, xs, ys, nullptr);
-        LineTo(hdc, xe, ye);
+        double x = x1 + (x2 - x1) * t;
+        double y = y1 + (y2 - y1) * t;
+
+        int tmp = round(std::sqrt(std::pow(x - xc, 2.0) + pow(y - yc, 2.0)));
+        if (tmp <= r)
+            SetPixel(hdc, round(x), round(y), RGB(255, 0, 0));
+        else
+            continue;
+
     }
 }
+void ClippingAlgorithm::clippedPointWithCircle(HDC hdc, int xc, int yc, int r, int x, int y, COLORREF c)//point clipping with circle
+{
+    int tmp = sqrt(pow(x - xc, 2) + pow(y - yc, 2));
+    if (tmp <= r)
+        SetPixel(hdc, x, y, c);
+}
+
+
 
 
 ClippingAlgorithm::~ClippingAlgorithm()
